@@ -104,42 +104,112 @@ public class DefaultVirtualFileACL implements VirtualFileACL {
     }
 
     @Override
-    public void chown(String newOwner) {
+    public void setOwner(String newOwner) {
         throw new UnsupportedOperationException("Not supported."); 
     }
 
     @Override
-    public void grantCreateFile(String profiles) {
+    public void setPermissionCreateFile(String profiles) {
         throw new UnsupportedOperationException("Not supported."); 
     }
 
     @Override
-    public void grantCreateDirectory(String profiles) {
+    public void setPermissionCreateDirectory(String profiles) {
         throw new UnsupportedOperationException("Not supported."); 
     }
 
     @Override
-    public void grantRemovePath(String profiles) {
+    public void setPermissionReadFile(String profiles) {
         throw new UnsupportedOperationException("Not supported."); 
     }
 
     @Override
-    public void grantReadFile(String profiles) {
+    public void setPermissionWriteFile(String profiles) {
         throw new UnsupportedOperationException("Not supported."); 
     }
 
     @Override
-    public void grantWriteFile(String profiles) {
-        throw new UnsupportedOperationException("Not supported."); 
-    }
-
-    @Override
-    public void grantListDirectory(String profiles) {
+    public void setPermissionListDirectory(String profiles) {
         throw new UnsupportedOperationException("Not supported."); 
     }
 
     @Override
     public String getOwner() {
         return owner;
+    }
+
+    @Override
+    public boolean isPropagateOwner() {
+        return false;
+    }
+
+    @Override
+    public void setPropagateOwner(boolean value) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public boolean isPropagateACL() {
+        return false;
+    }
+
+    @Override
+    public void setPropagateACL(boolean value) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void setPermissionRemoveFile(String profiles) {
+
+    }
+
+    @Override
+    public void setPermissionRemoveDirectory(String profiles) {
+
+    }
+
+    @Override
+    public void setPermissionRemove(String profiles) {
+
+    }
+
+    @Override
+    public String getPermissionRemove() {
+        return null;
+    }
+
+    @Override
+    public String getPermissionReadFile() {
+        return null;
+    }
+
+    @Override
+    public String getPermissionWriteFile() {
+        return null;
+    }
+
+    @Override
+    public String getPermissionRemoveFile() {
+        return null;
+    }
+
+    @Override
+    public String getPermissionRemoveDirectory() {
+        return null;
+    }
+
+    @Override
+    public String getPermissionListDirectory() {
+        return null;
+    }
+
+    @Override
+    public String getPermissionCreateDirectory() {
+        return null;
+    }
+
+    @Override
+    public String getPermissionCreateFile() {
+        return null;
     }
 }

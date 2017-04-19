@@ -6,11 +6,15 @@
 package net.vpc.common.vfs.impl;
 
 import net.vpc.common.vfs.VirtualFileACL;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.vpc.common.vfs.FileName;
-import net.vpc.common.vfs.VFS;
 import net.vpc.common.vfs.VFile;
 import net.vpc.common.vfs.VFileFilter;
 import net.vpc.common.vfs.VFileType;
@@ -51,7 +55,7 @@ public class DefaultFile implements VFile {
     @Override
     public String getParentPath() {
         VFile p = getParentFile();
-        return p == null ? null : p.getName();
+        return p == null ? null : p.getPath();
     }
 
     @Override
@@ -150,6 +154,21 @@ public class DefaultFile implements VFile {
     }
 
     @Override
+    public void copyTo(File file) throws IOException {
+        fs.copyTo(getPath(), file);
+    }
+
+    @Override
+    public void copyFrom(File file) throws IOException {
+        fs.copyFrom(getPath(), file);
+    }
+
+    @Override
+    public void copyTo(VFile outFile, VFileFilter filter) throws IOException {
+        fs.copyTo(getPath(), outFile,filter);
+    }
+
+    @Override
     public boolean isParentOf(String path) {
         return fs.isParentOf(getPath(), path);
     }
@@ -161,7 +180,24 @@ public class DefaultFile implements VFile {
 
     @Override
     public void visit(VFileVisitor visitor, VFileFilter filter) {
-        VFS.visit(this, visitor, filter);
+        VFSUtils.visit(this, visitor, filter);
+    }
+
+    public void visit(final String path, VFileVisitor visitor, VFileFilter filter) {
+        VFSUtils.visit(this, path,visitor, filter);
+    }
+
+    @Override
+    public VFile[] find(String path, VFileFilter filter) {
+        final List<VFile> found=new ArrayList<>();
+        visit(path, new VFileVisitor() {
+            @Override
+            public boolean visit(VFile pathname) {
+                found.add(pathname);
+                return true;
+            }
+        }, filter);
+        return found.toArray(new VFile[found.size()]);
     }
 
     @Override
@@ -258,5 +294,10 @@ public class DefaultFile implements VFile {
     @Override
     public boolean isAllowedWrite(String user) {
         return getFileSystem().getSecurityManager().isAllowedWrite(getPath(),user);
+    }
+
+    @Override
+    public File copyToNativeTempFile() throws IOException {
+        return getFileSystem().copyToNativeTempFile(getPath());
     }
 }

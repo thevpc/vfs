@@ -5,6 +5,9 @@
  */
 package net.vpc.common.vfs;
 
+import net.vpc.common.vfs.impl.VFSUtils;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,6 +72,12 @@ public interface VirtualFileSystem {
 
     public void copyTo(String path, VFile file) throws IOException;
 
+    public void copyTo(String path, File file) throws IOException ;
+
+    public void copyFrom(String path, File file) throws IOException ;
+
+    public void copyTo(String inFile, VFile outFile, VFileFilter filter) throws IOException ;
+
     public boolean isParentOf(String parent, String child);
 
     /**
@@ -92,5 +101,13 @@ public interface VirtualFileSystem {
 
     public VFSSecurityManager getSecurityManager();
 
+    /**
+     * return ACL information on the given file or null if the file does could not be resolved
+     * Though null value should not be check against existence of the file/folder
+     * @param path pat hto get ACL for
+     * @return ACL object for the given path
+     */
     public VirtualFileACL getACL(String path);
+
+    public File copyToNativeTempFile(String inFile) throws IOException ;
 }

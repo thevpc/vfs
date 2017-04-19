@@ -8,14 +8,22 @@ package net.vpc.common.vfs.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import net.vpc.common.vfs.VFile;
-import net.vpc.common.vfs.VFileType;
+
+import net.vpc.common.vfs.*;
 
 /**
  *
  * @author taha.bensalah@gmail.com
  */
 public abstract class AbstractDelegateVirtualFileSystem extends AbstractVirtualFileSystem {
+    private VFileDelegateSecurityManager _secu=new VFileDelegateSecurityManager(
+            new VFileDelegate() {
+                @Override
+                public VFile getDelegate(String path) {
+                    return AbstractDelegateVirtualFileSystem.this.getDelegate(path);
+                }
+            }
+    );
 
     public AbstractDelegateVirtualFileSystem(String id) {
         super(id);
@@ -45,6 +53,10 @@ public abstract class AbstractDelegateVirtualFileSystem extends AbstractVirtualF
     public boolean exists(String path) {
         VFile f = getDelegate(path);
         if (f == null) {
+            if(path.equals("/")){
+                //root alwas exists
+                return true;
+            }
             return false;
         }
         return f.getFileSystem().exists(f.getPath());
@@ -138,5 +150,59 @@ public abstract class AbstractDelegateVirtualFileSystem extends AbstractVirtualF
         }
         return f.getFileSystem().getFileType(f.getPath());
     }
+    @Override
+    public VFile[] listFiles(final String path, final VFileFilter fileFilter) {
+        VFile f = getDelegate(path);
+        if (f == null) {
+            return null;
+        }
+        final String basePath = f.getPath();
+        VFile[] vFiles = f.listFiles(
+                fileFilter == null ? null :
+                        new VFileFilter() {
+                            @Override
+                            public boolean accept(VFile pathname) {
+                                String allPath = pathname.getPath();
+                                String newPath = path + allPath.substring(basePath.length());
+                                DefaultFile newFile = new DefaultFile(newPath, AbstractDelegateVirtualFileSystem.this);
+                                return (fileFilter.accept(newFile));
+                            }
+                        });
+        for (int i = 0; i < vFiles.length; i++) {
+            String allPath = vFiles[i].getPath();
+            String newPath = path + allPath.substring(basePath.length());
+            DefaultFile newFile = new DefaultFile(newPath, AbstractDelegateVirtualFileSystem.this);
+            vFiles[i]=newFile;
+        }
+        return vFiles;
+    }
 
+    @Override
+    public VFile getBase(String path, String vfsId) {
+        if (vfsId == null || vfsId.length() == 0 || vfsId.equalsIgnoreCase(getId())) {
+            return get(path);
+        }
+        VFile delegate = getDelegate(path);
+        if(delegate!=null){
+            return delegate.getBaseFile(vfsId);
+        }
+        return null;
+    }
+
+    @Override
+    public VFSSecurityManager getSecurityManager() {
+        return _secu;
+    }
+
+    @Override
+    public VirtualFileACL getACL(String path) {
+        VFile delegate = getDelegate(path);
+        if(delegate==null) {
+            if ("/".equals(path)) {
+                return DefaultVirtualFileACL.READ_ONLY;
+            }
+            return null;
+        }
+        return delegate.getFileSystem().getACL(delegate.getPath());
+    }
 }

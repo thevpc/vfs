@@ -1,6 +1,5 @@
-import net.vpc.common.vfs.VFS;
-import net.vpc.common.vfs.VFile;
-import net.vpc.common.vfs.VirtualFileSystem;
+import net.vpc.common.vfs.*;
+import net.vpc.common.vfs.impl.VFolderVFS;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,10 +10,25 @@ import java.util.logging.Logger;
 public class TestVFS {
     public static void main(String[] args) {
         try {
-            VirtualFileSystem subfs = VFS.createNativeFS().subfs("C:\\work\\apache-tomcat-8.5.6\\bin");
-            for (VFile listFile : subfs.listFiles("/")) {
-                System.out.println(listFile);
-            }
+            //C:\work\apache-tomcat-8.5.6\bin
+            VirtualFileSystem subfs = VFS.createNativeFS().subfs("/data/vpc");
+            final ListFS ffs=VFS.createListFS("ffs");
+            subfs.get("/").visit("/*/My*", new VFileVisitor() {
+                @Override
+                public boolean visit(VFile pathname) {
+//                    System.out.println(pathname);
+                    ffs.add(pathname.getName(),pathname);
+                    return true;
+                }
+            }, null);
+            ffs.get("/").visit(new VFileVisitor() {
+                @Override
+                public boolean visit(VFile pathname) {
+                    System.out.println(pathname);
+                    return true;
+                }
+            }, null);
+
 //            MountableFS mfs = VFS.createMountableFS("?");
 //            mfs.mount("/", createNativeFS().subfs("/home/vpc/acm/folder1"));
 //            mfs.mount("/f3", createNativeFS().subfs("/home/vpc/acm/folder3"));

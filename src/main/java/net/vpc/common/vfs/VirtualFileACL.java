@@ -10,7 +10,6 @@ import net.vpc.common.vfs.impl.ACLPermission;
 import java.util.Set;
 
 /**
- *
  * @author taha.bensalah@gmail.com
  */
 public interface VirtualFileACL {
@@ -41,20 +40,46 @@ public interface VirtualFileACL {
 
     public Set<String> getPropertyNames();
 
-    public void chown(String newOwner);
+    public void setOwner(String newOwner);
 
     public String getOwner();
 
-    public void grantCreateFile(String profiles);
+    public void setPermissionCreateFile(String profiles);
 
-    public void grantCreateDirectory(String profiles);
+    public void setPermissionCreateDirectory(String profiles);
 
-    public void grantRemovePath(String profiles);
+    public void setPermissionRemoveFile(String profiles);
 
-    public void grantReadFile(String profiles);
+    public void setPermissionRemoveDirectory(String profiles);
 
-    public void grantWriteFile(String profiles);
+    public void setPermissionReadFile(String profiles);
 
-    public void grantListDirectory(String profiles);
+    public void setPermissionWriteFile(String profiles);
+
+    public void setPermissionListDirectory(String profiles);
+    public void setPermissionRemove(String profiles) ;
+    public String getPermissionRemove() ;
+
+    public boolean isPropagateOwner();
+
+    public void setPropagateOwner(boolean value);
+
+    public boolean isPropagateACL();
+
+    public void setPropagateACL(boolean value);
+
+    public String getPermissionReadFile();
+
+    public String getPermissionWriteFile();
+
+    public String getPermissionRemoveFile();
+
+    public String getPermissionRemoveDirectory();
+
+    public String getPermissionListDirectory();
+
+    public String getPermissionCreateDirectory();
+
+    public String getPermissionCreateFile();
 
 }

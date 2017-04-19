@@ -330,12 +330,15 @@ public abstract class FileACLVirtualFileSystem extends AbstractDelegateVirtualFi
 //            if (!getSecurityManager().getAllowedUpdateChildPermission(getParentFile(path).getPath(), VFileType.FILE, null)) {
 //                throw new RuntimeException("Not Allowed");
 //            }
-            if (!getSecurityManager().isAllowedWrite(f.getParentFile().getPath(), null)) {
+            if (!getSecurityManager().isAllowedCreateChild(f.getParentFile().getPath(),VFileType.FILE, null)) {
                 throw new RuntimeException("Write Not Allowed at " + f.getParentFile().getPath());
             }
-            VirtualFileACL a = getExistingACL(baseFS.get(path).getParentPath());
-            if (a != null) {
-                storeACL(path, (SerializableVirtualFileACL) a.getDefaultFolderACL());
+            VirtualFileACL a0= getExistingACL(f.getPath());
+            if (a0==null ) {
+                VirtualFileACL a = getExistingACL(f.getParentPath());
+                if (a != null) {
+                    storeACL(path, (SerializableVirtualFileACL) a.getDefaultFileACL());
+                }
             }
         }
         return super.getOutputStream(path, append);

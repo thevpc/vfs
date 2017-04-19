@@ -5,12 +5,12 @@
  */
 package net.vpc.common.vfs;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- *
  * @author taha.bensalah@gmail.com
  */
 public interface VFile {
@@ -59,6 +59,12 @@ public interface VFile {
 
     public VFile get(String path);
 
+    public void copyTo(File file) throws IOException;
+
+    public void copyFrom(File file) throws IOException;
+
+    public void copyTo(VFile outFile, VFileFilter filter) throws IOException ;
+
     public void copyTo(VFile file) throws IOException;
 
     public void renameTo(VFile file) throws IOException;
@@ -68,6 +74,10 @@ public interface VFile {
     public boolean isChildOf(String path);
 
     public void visit(VFileVisitor visitor, VFileFilter filter);
+
+    public VFile[] find(String path, VFileFilter filter);
+
+    public void visit(String path, VFileVisitor visitor, VFileFilter filter);
 
     public byte[] readBytes() throws IOException;
 
@@ -92,4 +102,5 @@ public interface VFile {
     public boolean isAllowedRead(String user);
 
     public boolean isAllowedWrite(String user);
+    public File copyToNativeTempFile() throws IOException ;
 }

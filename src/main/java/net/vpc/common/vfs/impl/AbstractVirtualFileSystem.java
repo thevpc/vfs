@@ -5,23 +5,17 @@
  */
 package net.vpc.common.vfs.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-import net.vpc.common.vfs.VFS;
 import net.vpc.common.vfs.VFile;
 import net.vpc.common.vfs.VFileFilter;
 import net.vpc.common.vfs.VirtualFileSystem;
 
+import java.io.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+
 /**
- *
  * @author taha.bensalah@gmail.com
  */
 public abstract class AbstractVirtualFileSystem implements VirtualFileSystem {
@@ -46,8 +40,8 @@ public abstract class AbstractVirtualFileSystem implements VirtualFileSystem {
 
     @Override
     public boolean isParentOf(String parent, String child) {
-        List<String> p = toPathParts(parent, true);
-        List<String> c = toPathParts(child, true);
+        List<String> p = VFSUtils.toPathParts(parent, true);
+        List<String> c = VFSUtils.toPathParts(child, true);
         if (c.size() > p.size()) {
             for (int i = 0; i < p.size(); i++) {
                 if (!p.get(i).equals(c.get(i))) {
@@ -78,31 +72,10 @@ public abstract class AbstractVirtualFileSystem implements VirtualFileSystem {
 //            throw new IllegalArgumentException("Invalid Path");
 //        }
 
-        List<String> r = toPathParts(path, true);
+        List<String> r = VFSUtils.toPathParts(path, true);
         return toPathString(r);
     }
 
-    public List<String> toPathParts(String path, boolean compact) {
-        List<String> r = new ArrayList<String>();
-        for (String i : path.split("/|\\\\")) {
-            if (i.length() > 0) {
-                if (compact) {
-                    if (i.equals(".")) {
-                        //do nothing
-                    } else if (i.equals("..")) {
-                        if(r.size()>0) {
-                            r.remove(r.size() - 1);
-                        }
-                    } else {
-                        r.add(i);
-                    }
-                } else {
-                    r.add(i);
-                }
-            }
-        }
-        return r;
-    }
 
     @Override
     public VFile getParentFile(String file) {
@@ -110,7 +83,7 @@ public abstract class AbstractVirtualFileSystem implements VirtualFileSystem {
             return null;
         }
         String path = file;
-        List<String> r = toPathParts(path, true);
+        List<String> r = VFSUtils.toPathParts(path, true);
         if (r.isEmpty()) {
             return null;
         }
@@ -135,7 +108,7 @@ public abstract class AbstractVirtualFileSystem implements VirtualFileSystem {
         OutputStream c = null;
         try {
             c = getOutputStream(path);
-            VFS.copy(stream, c, 2048);
+            VFSUtils.copy(stream, c, 2048);
         } finally {
             if (c != null) {
                 c.close();
@@ -198,13 +171,28 @@ public abstract class AbstractVirtualFileSystem implements VirtualFileSystem {
 
     @Override
     public void renameTo(String path, VFile file) throws IOException {
-        VFS.copy(get(path), file);
+        VFSUtils.copy(get(path), file);
         delete(path);
     }
 
     @Override
     public void copyTo(String path, VFile file) throws IOException {
-        VFS.copy(get(path), file);
+        VFSUtils.copy(get(path), file);
+    }
+
+    @Override
+    public void copyTo(String path, File file) throws IOException {
+        VFSUtils.copy(get(path), file);
+
+    }
+
+    @Override
+    public void copyFrom(String path, File file) throws IOException {
+        VFSUtils.copy(file, get(path));
+    }
+
+    public void copyTo(String inFile, VFile outFile, VFileFilter filter) throws IOException {
+        VFSUtils.copy(get(inFile), outFile, filter);
     }
 
     @Override
@@ -229,7 +217,6 @@ public abstract class AbstractVirtualFileSystem implements VirtualFileSystem {
     }
 
     /**
-     *
      * @param fileFilter
      * @return
      */
@@ -339,5 +326,15 @@ public abstract class AbstractVirtualFileSystem implements VirtualFileSystem {
                 }
             }
         }
+    }
+
+    @Override
+    public File copyToNativeTempFile(String inFile) throws IOException {
+        return VFSUtils.copyNativeTempFile(get(inFile));
+    }
+
+    @Override
+    public VFile[] getRoots() {
+        return new VFile[]{new DefaultFile("/", this)};
     }
 }

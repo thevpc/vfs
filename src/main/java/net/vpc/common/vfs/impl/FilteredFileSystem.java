@@ -65,11 +65,11 @@ public class FilteredFileSystem extends AbstractDelegateVirtualFileSystem {
     }
 
 
-    @Override
-    public VirtualFileACL getACL(String path) {
-        VFile t = getDelegate(path);
-        return t == null ? null : t.getACL();
-    }
+//    @Override
+//    public VirtualFileACL getACL(String path) {
+//        VFile t = getDelegate(path);
+//        return t == null ? null : t.getACL();
+//    }
 
     @Override
     public VFile[] listFiles(String path, VFileFilter fileFilter) {

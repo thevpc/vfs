@@ -36,7 +36,7 @@ public class DefaultMountableVFS extends AbstractDelegateVirtualFileSystem imple
     @Override
     public void mount(String path, VirtualFileSystem subfs) throws IOException {
         path = normalizeVirtualPath(path);
-        List<String> p = toPathParts(path, true);
+        List<String> p = VFSUtils.toPathParts(path, true);
         String parent = null;
         if (p.size() > 0) {
             parent = toPathString(p, 1, p.size());
@@ -44,11 +44,11 @@ public class DefaultMountableVFS extends AbstractDelegateVirtualFileSystem imple
             if (pp == null || !pp.isDirectory() || !pp.exists()) {
                 throw new IOException("Unable to mount " + path + ". Parent path not found " + parent);
             }
-            MountPoint mp = new MountPoint(path, parent, subfs, toPathParts(path, true));
+            MountPoint mp = new MountPoint(path, parent, subfs, VFSUtils.toPathParts(path, true));
             mounts.add(0, mp);
             mountsByFirstPath.put(p.get(0), mp);
         } else {
-            MountPoint mp = new MountPoint("/", "/", subfs, toPathParts(path, true));
+            MountPoint mp = new MountPoint("/", "/", subfs, VFSUtils.toPathParts(path, true));
             mounts.add(0, mp);
             mountsByFirstPath.put("/", mp);
             //mount at root!
@@ -151,7 +151,7 @@ public class DefaultMountableVFS extends AbstractDelegateVirtualFileSystem imple
     }
 
     protected MountPointAndFile getMountPointAndFile(String f) {
-        List<String> p0 = toPathParts(f, true);
+        List<String> p0 = VFSUtils.toPathParts(f, true);
 //        List<MountPoint> mounts2 = new ArrayList<>(mounts);
         if (p0.isEmpty()) {
             MountPoint y2 = mountsByFirstPath.get("/");
@@ -330,14 +330,14 @@ public class DefaultMountableVFS extends AbstractDelegateVirtualFileSystem imple
         }
     }
 
-    @Override
-    public VirtualFileACL getACL(String path) {
-        VFile t = getDelegate(path);
-        if (t == null) {
-            if ("/".equals(path)) {
-                return DefaultVirtualFileACL.READ_ONLY;
-            }
-        }
-        return t == null ? null : t.getACL();
-    }
+//    @Override
+//    public VirtualFileACL getACL(String path) {
+//        VFile t = getDelegate(path);
+//        if (t == null) {
+//            if ("/".equals(path)) {
+//                return DefaultVirtualFileACL.READ_ONLY;
+//            }
+//        }
+//        return t == null ? null : t.getACL();
+//    }
 }

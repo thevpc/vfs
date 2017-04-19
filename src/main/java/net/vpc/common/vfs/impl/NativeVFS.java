@@ -156,7 +156,7 @@ public class NativeVFS extends AbstractVirtualFileSystem {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(f, false);
-            VFS.copy(content, fos, 2048);
+            VFSUtils.copy(content, fos, 2048);
         } finally {
             if (fos != null) {
                 fos.close();
@@ -250,14 +250,9 @@ public class NativeVFS extends AbstractVirtualFileSystem {
         if (file.getFileSystem() == this) {
             toNativeFile(path).renameTo(toNativeFile(file));
         } else {
-            VFS.copy(get(path), file);
+            VFSUtils.copy(get(path), file);
             delete(path);
         }
-    }
-
-    @Override
-    public void copyTo(String path, VFile file) throws IOException {
-        VFS.copy(get(path), file);
     }
 
     @Override

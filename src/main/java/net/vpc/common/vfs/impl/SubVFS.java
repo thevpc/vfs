@@ -29,7 +29,7 @@ public class SubVFS extends AbstractDelegateVirtualFileSystem {
         super(id);
         this.fs = fs;
         this.prefix = (prefix == null || prefix.trim().isEmpty()) ? null : normalizeVirtualPath(prefix);
-        this.prefixParts = this.prefix == null ? new ArrayList<String>() : toPathParts(this.prefix, true);
+        this.prefixParts = this.prefix == null ? new ArrayList<String>() : VFSUtils.toPathParts(this.prefix, true);
         this.sm = new VFSSecurityManagerImpl();
     }
 
@@ -54,11 +54,11 @@ public class SubVFS extends AbstractDelegateVirtualFileSystem {
         return null;
     }
 
-    @Override
-    public VirtualFileACL getACL(String path) {
-        VFile t = getDelegate(path);
-        return t == null ? null : t.getACL();
-    }
+//    @Override
+//    public VirtualFileACL getACL(String path) {
+//        VFile t = getDelegate(path);
+//        return t == null ? null : t.getACL();
+//    }
 
     @Override
     public VFSSecurityManager getSecurityManager() {
@@ -74,7 +74,7 @@ public class SubVFS extends AbstractDelegateVirtualFileSystem {
         VFile[] d = f.getFileSystem().listFiles(f.getPath());
         ArrayList<VFile> r = new ArrayList<>();
         for (VFile d1 : d) {
-            List<String> pp = toPathParts(d1.getPath(), true);
+            List<String> pp = VFSUtils.toPathParts(d1.getPath(), true);
             for (int i = 0; i < prefixParts.size(); i++) {
                 pp.remove(0);
             }

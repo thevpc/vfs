@@ -3,8 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.vpc.common</groupId>
     <artifactId>vfs</artifactId>
-    <version>1.7</version>
+    <version>1.8</version>
     <packaging>jar</packaging>
+    <name>net.vpc.common.vfs</name>
     <url>https://github.com/thevpc/upa/wiki</url>
 
     <organization>

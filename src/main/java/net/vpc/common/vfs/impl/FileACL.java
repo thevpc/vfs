@@ -25,32 +25,38 @@ public class FileACL implements SerializableVirtualFileACL {
 
     private static final Logger log = Logger.getLogger(FileACL.class.getName());
     private Properties p;
-    private String path;
-    private FileACLVirtualFileSystem outer;
+    private final String path;
+    private final FileACLVirtualFileSystem fs;
 
-    public FileACL(String path, Properties p, FileACLVirtualFileSystem outer) {
-        this.outer = outer;
+    public FileACL(String path, Properties p, FileACLVirtualFileSystem fs) {
+        this.fs = fs;
         this.p = p;
         this.path = path;
     }
 
-    protected void set(String prop, String val) {
+    protected boolean set(String prop, String val) {
+        boolean updated = false;
         if (p == null) {
-            p=new Properties();
+            p = new Properties();
         }
         if (val == null) {
             val = "";
         }
         if (val.length() == 0) {
-            p.remove(prop);
+            if (null != p.remove(prop)) {
+                updated = true;
+            }
         } else {
-            p.put(prop, val);
+            if (null != p.put(prop, val)) {
+                updated = true;
+            }
         }
+        return updated;
     }
 
     public String getUser(String login) {
         if (isEmpty(login)) {
-            String login2 = outer.getUserLogin();
+            String login2 = fs.getUserLogin();
             if (!isEmpty(login2)) {
                 return login2;
             }
@@ -59,7 +65,7 @@ public class FileACL implements SerializableVirtualFileACL {
     }
 
     public ACLPermission getPermission(String action, String login) {
-        if (outer.isAdmin()) {
+        if (fs.isAdmin()) {
             return ACLPermission.GRANT;
         }
         //            String login0=login;
@@ -77,13 +83,14 @@ public class FileACL implements SerializableVirtualFileACL {
         if (allowedProfiles.trim().equals("*")) {
             return ACLPermission.GRANT;
         }
-        return outer.userMatchesProfileFilter(login, allowedProfiles);
+        return fs.userMatchesProfileFilter(login, allowedProfiles);
     }
 
+    @Override
     public String getOwner() {
         String owner = p == null ? null : p.getProperty("Owner");
-        if((owner == null || owner.trim().isEmpty())) {
-            VFile cf = outer.get(path);
+        if ((owner == null || owner.trim().isEmpty())) {
+            VFile cf = fs.get(path);
             VFile pp = cf.getParentFile();
             if (pp != null) {
                 VirtualFileACL pacl = pp.getACL();
@@ -113,22 +120,22 @@ public class FileACL implements SerializableVirtualFileACL {
 
     @Override
     public ACLPermission getAllowedRemovePermission(String user) {
-        VFile cf = outer.get(path);
+        VFile cf = fs.get(path);
         ACLPermission fcurr = getPermission("Remove", user);
-        if(fcurr!=ACLPermission.DEFAULT){
-            if(fcurr==ACLPermission.DENY){
+        if (fcurr != ACLPermission.DEFAULT) {
+            if (fcurr == ACLPermission.DENY) {
                 return fcurr;
             }
         }
-        ACLPermission curr=null;
+        ACLPermission curr = null;
         //file allow here
-        if(cf.isFile()){
+        if (cf.isFile()) {
             VFile pp = cf.getParentFile();
             if (pp != null) {
                 VirtualFileACL pacl = pp.getACL();
                 if (pacl != null) {
                     curr = pacl.getAllowedRemoveChildPermission(cf.getFileType(), user);
-                    if(curr!=ACLPermission.DEFAULT){
+                    if (curr != ACLPermission.DEFAULT) {
                         return curr;
                     }
                 }
@@ -139,9 +146,9 @@ public class FileACL implements SerializableVirtualFileACL {
 
     @Override
     public ACLPermission getAllowedReadPermission(String user) {
-        VFile cf = outer.get(path);
+        VFile cf = fs.get(path);
         ACLPermission curr = getPermission("Read", user);
-        if(curr!=ACLPermission.DEFAULT){
+        if (curr != ACLPermission.DEFAULT) {
             return curr;
         }
         return ACLPermission.DEFAULT;
@@ -149,18 +156,18 @@ public class FileACL implements SerializableVirtualFileACL {
 
     @Override
     public ACLPermission getAllowedWritePermission(String user) {
-        VFile cf = outer.get(path);
+        VFile cf = fs.get(path);
         ACLPermission curr = getPermission("Write", user);
-        if(curr!=ACLPermission.DEFAULT){
+        if (curr != ACLPermission.DEFAULT) {
             return curr;
         }
-        if(cf.isFile()){
+        if (cf.isFile()) {
             VFile pp = cf.getParentFile();
             if (pp != null) {
                 VirtualFileACL pacl = pp.getACL();
                 if (pacl != null) {
                     curr = pacl.getAllowedUpdateChildPermission(cf.getFileType(), user);
-                    if(curr!=ACLPermission.DEFAULT){
+                    if (curr != ACLPermission.DEFAULT) {
                         return curr;
                     }
                 }
@@ -192,40 +199,40 @@ public class FileACL implements SerializableVirtualFileACL {
     @Override
     public VirtualFileACL getDefaultFileACL() {
         Properties p2 = new Properties();
-        if(isPropagateOwner()) {
+        if (isPropagateOwner()) {
             p2.setProperty("Owner", getUser(getOwner()));
-        }else{
+        } else {
             p2.setProperty("Owner", getUser(null));
         }
-        if(p.containsKey("ReadFile")){
+        if (p.containsKey("ReadFile")) {
             p2.setProperty("ReadFile", p.getProperty("ReadFile"));
-        }else {
+        } else {
             p2.setProperty("ReadFile", "*");
         }
-        if(p.containsKey("WriteFile")){
+        if (p.containsKey("WriteFile")) {
             p2.setProperty("WriteFile", p.getProperty("WriteFile"));
-        }else {
+        } else {
             p2.setProperty("WriteFile", "*");
         }
-        return new FileACL(null, p2, outer);
+        return new FileACL(null, p2, fs);
     }
 
     @Override
     public VirtualFileACL getDefaultFolderACL() {
         Properties p2 = new Properties();
         //will inherit all rights
-        if(isPropagateACL()) {
+        if (isPropagateACL()) {
             p2.putAll(this.p);
         }
-        if(p2.containsKey("ListDirectory")) {
+        if (p2.containsKey("ListDirectory")) {
             p2.setProperty("ListDirectory", "*");
         }
-        if(isPropagateOwner()) {
+        if (isPropagateOwner()) {
             p2.setProperty("Owner", getUser(getOwner()));
-        }else{
+        } else {
             p2.setProperty("Owner", getUser(null));
         }
-        return new FileACL(null, p2, outer);
+        return new FileACL(null, p2, fs);
     }
 
     public void setOwner(String newOwner) {
@@ -252,69 +259,73 @@ public class FileACL implements SerializableVirtualFileACL {
         setACLProperty("RemoveDirectory", profiles);
     }
 
-    public String getPermissionReadFile(){
+    public String getPermissionReadFile() {
         return getACLProperty("ReadFile");
     }
 
-    public String getPermissionRemove(){
+    public String getPermissionRemove() {
         return getACLProperty("Remove");
     }
 
-    public String getPermissionWriteFile(){
+    public String getPermissionWriteFile() {
         return getACLProperty("WriteFile");
     }
 
-    public String getPermissionListDirectory(){
+    public String getPermissionListDirectory() {
         return getACLProperty("ListDirectory");
     }
 
-    public String getPermissionCreateDirectory(){
+    public String getPermissionCreateDirectory() {
         return getACLProperty("CreateDirectory");
     }
 
-    public String getPermissionCreateFile(){
+    public String getPermissionCreateFile() {
         return getACLProperty("CreateFile");
     }
 
-    public String getPermissionRemoveFile(){
+    public String getPermissionRemoveFile() {
         return getACLProperty("RemoveFile");
     }
 
-    public String getPermissionRemoveDirectory(){
+    public String getPermissionRemoveDirectory() {
         return getACLProperty("RemoveDirectory");
     }
 
+    @Override
     public void setPermissionReadFile(String profiles) {
         setACLProperty("ReadFile", profiles);
     }
 
+    @Override
     public void setPermissionWriteFile(String profiles) {
         setACLProperty("WriteFile", profiles);
     }
 
+    @Override
     public void setPermissionListDirectory(String profiles) {
         setACLProperty("ListDirectory", profiles);
     }
 
     protected void setACLProperty(String property, String value) {
         try {
-            if (outer.isAdmin()
-                    || getOwner().equals(outer.getUserLogin())) {
-                set(property, value);
-                outer.storeACL(path, this);
+            if (fs.isAdmin()
+                    || getOwner().equals(fs.getUserLogin())) {
+                if (set(property, value)) {
+                    fs.storeACL(path, this);
+                }
                 return;
             }
         } catch (Exception e) {
             log.log(Level.FINER, "Error", e);
             //ignore
         }
-        throw new SecurityException("ACL update not allowed for "+path);
+        throw new SecurityException("ACL update not allowed for " + path);
     }
 
     @Override
     public boolean isReadOnly() {
-        return !outer.isAdmin()
-                && !getOwner().equals(outer.getUserLogin());
+        return !fs.isAdmin()
+                && !getOwner().equals(fs.getUserLogin());
     }
 
     public boolean isPropagateOwner() {
@@ -322,7 +333,7 @@ public class FileACL implements SerializableVirtualFileACL {
     }
 
     public void setPropagateOwner(boolean value) {
-        setACLProperty("PropagateOwner",value?"true":null);
+        setACLProperty("PropagateOwner", value ? "true" : null);
     }
 
     public boolean isPropagateACL() {
@@ -330,7 +341,7 @@ public class FileACL implements SerializableVirtualFileACL {
     }
 
     public void setPropagateACL(boolean value) {
-        setACLProperty("PropagateACL",value?"true":null);
+        setACLProperty("PropagateACL", value ? "true" : null);
     }
 
     protected String getACLProperty(String property) {

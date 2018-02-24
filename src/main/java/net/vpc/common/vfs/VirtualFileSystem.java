@@ -5,7 +5,6 @@
  */
 package net.vpc.common.vfs;
 
-import net.vpc.common.vfs.impl.VFSUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,9 +19,9 @@ public interface VirtualFileSystem {
 
     public String getId();
 
-    public String toNativePath(String vpath);
-
-    public String toVirtualPath(String jpath);
+//    public String toNativePath(String vpath);
+//
+//    public String toVirtualPath(String jpath);
 
     VFile get(String parent, String path);
 
@@ -104,10 +103,10 @@ public interface VirtualFileSystem {
     /**
      * return ACL information on the given file or null if the file does could not be resolved
      * Though null value should not be check against existence of the file/folder
-     * @param path pat hto get ACL for
+     * @param path path to get ACL for
      * @return ACL object for the given path
      */
     public VirtualFileACL getACL(String path);
 
-    public File copyToNativeTempFile(String inFile) throws IOException ;
+    public File copyToNativeTempFile(String path) throws IOException ;
 }

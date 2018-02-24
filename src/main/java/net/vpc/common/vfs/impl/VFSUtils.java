@@ -252,6 +252,75 @@ public class VFSUtils {
             }
         }
     }
+    public static void copy(File inFile, VFile outFile, FileFilter filter) throws IOException {
+        class InOut {
+
+            File inFile;
+            VFile outFile;
+
+            public InOut(File inFile, VFile outFile) {
+                this.inFile = inFile;
+                this.outFile = outFile;
+            }
+        }
+        Stack<InOut> stack = new Stack();
+        stack.push(new InOut(inFile, outFile));
+        boolean root = true;
+        while (!stack.isEmpty()) {
+            InOut x = stack.pop();
+            boolean wasRoot = root;
+            if (root) {
+                root = false;
+            }
+            if (wasRoot || filter == null || filter.accept(x.inFile)) {
+                if (x.inFile.isDirectory()) {
+                    if (x.outFile.exists()) {
+                        //do nothing
+                    } else {
+                        x.outFile.mkdirs();
+                    }
+                    File[] sub = x.inFile.listFiles();
+                    for (int i = sub.length - 1; i >= 0; i--) {
+                        stack.push(new InOut(sub[i], x.outFile.get(sub[i].getName())));
+                    }
+                } else {
+                    VFile f_out = x.outFile;
+                    if (x.outFile.exists() && x.outFile.isDirectory()) {
+                        f_out = x.outFile.get(inFile.getName());
+                    }
+
+                    if (x.inFile.exists()) {
+                        if (f_out.getParentFile() != null && !f_out.getParentFile().exists()) {
+                            if (!f_out.getParentFile().mkdirs()) {
+                                throw new IOException("Unable to create folder " + f_out.getParentFile());
+                            }
+                        }
+                        InputStream ins = null;
+                        OutputStream outs = null;
+                        try {
+                            ins = new FileInputStream(x.inFile);
+                            try {
+                                outs = f_out.getOutputStream();
+
+                                copy(ins, outs, Math.max(1014 * 1024, (int) x.inFile.length()));
+
+                            } finally {
+                                if (outs != null) {
+                                    outs.close();
+                                }
+                            }
+                        } finally {
+                            if (ins != null) {
+                                ins.close();
+                            }
+                        }
+                    }
+
+//                    copyFiles(x.in, f_out);
+                }
+            }
+        }
+    }
 
 
     public static void copy(InputStream inStream, OutputStream outStream, int bufferSize) throws IOException {
@@ -313,16 +382,16 @@ public class VFSUtils {
         }
     }
 
-    public static void copy(File inFile, File outFile, final FileFilter filter) throws IOException {
-        final VirtualFileSystem nfs = VFS.NATIVE_FS;
-        copy(nfs.get(inFile.getPath()), nfs.get(outFile.getPath()), filter == null ? null : new VFileFilter() {
-
-            @Override
-            public boolean accept(VFile pathname) {
-                return filter.accept(new File(nfs.toNativePath(pathname.getPath())));
-            }
-        });
-    }
+//    public static void copy(File inFile, File outFile, final FileFilter filter) throws IOException {
+//        final VirtualFileSystem nfs = VFS.NATIVE_FS;
+//        copy(nfs.get(inFile.getPath()), nfs.get(outFile.getPath()), filter == null ? null : new VFileFilter() {
+//
+//            @Override
+//            public boolean accept(VFile pathname) {
+//                return filter.accept(new File(nfs.toNativePath(pathname.getPath())));
+//            }
+//        });
+//    }
 
     public static File copyNativeTempFile(VFile inFile) throws IOException {
         File f = File.createTempFile("tmp_", inFile.getName());

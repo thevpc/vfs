@@ -13,11 +13,12 @@ import net.vpc.common.vfs.VFileNameGenerator;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * @author taha.bensalah@gmail.com
  */
-public class VFolderVFS extends AbstractDelegateVirtualFileSystem implements ListFS{
+public class VFolderVFS extends AbstractDelegateVirtualFileSystem implements ListFS {
 
     private LinkedHashMap<String, VFile> children = new LinkedHashMap<>();
 
@@ -33,14 +34,14 @@ public class VFolderVFS extends AbstractDelegateVirtualFileSystem implements Lis
         if (file == null) {
             throw new NullPointerException("File is null");
         }
-        String validName=name;
-        if(nameGenerator==null){
-            nameGenerator=DefaultFileNameGenerator.INSTANCE;
+        String validName = name;
+        if (nameGenerator == null) {
+            nameGenerator = DefaultFileNameGenerator.INSTANCE;
         }
-        int index=1;
-        while(true){
-            validName=nameGenerator.generateFileName(name,index);
-            if(!children.containsKey(validName)){
+        int index = 1;
+        while (true) {
+            validName = nameGenerator.generateFileName(name, index);
+            if (!children.containsKey(validName)) {
                 break;
             }
             index++;
@@ -64,21 +65,23 @@ public class VFolderVFS extends AbstractDelegateVirtualFileSystem implements Lis
 
     @Override
     public void remove(String name) {
-        children.remove(name);
-
+        if (null != children.remove(name)) {
+            throw new NoSuchElementException(name + " not found");
+        }
     }
+
     public VFile[] listFiles(final String path, final VFileFilter fileFilter) {
-        if("/".equals(path)){
-            List<VFile> all=new ArrayList<>(children.size());
+        if ("/".equals(path)) {
+            List<VFile> all = new ArrayList<>(children.size());
             for (String s : children.keySet()) {
-                DefaultFile f = new DefaultFile("/"+s, this);
-                if(fileFilter==null || fileFilter.accept(f)) {
+                DefaultFile f = new DefaultFile("/" + s, this);
+                if (fileFilter == null || fileFilter.accept(f)) {
                     all.add(f);
                 }
             }
             return all.toArray(new VFile[all.size()]);
         }
-        return super.listFiles(path,fileFilter);
+        return super.listFiles(path, fileFilter);
     }
     //    @Override
 //    public String toVirtualPath(String jpath) {
@@ -138,6 +141,6 @@ public class VFolderVFS extends AbstractDelegateVirtualFileSystem implements Lis
 
     @Override
     public String toString() {
-        return "VFolderVFS{"+getId()+"}";
+        return "VFolderVFS{" + getId() + "}";
     }
 }

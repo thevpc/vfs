@@ -1,5 +1,7 @@
 package net.vpc.common.vfs;
 
+import java.util.NoSuchElementException;
+
 /**
  * Created by vpc on 1/1/17.
  */
@@ -14,7 +16,18 @@ public interface ListFS extends VirtualFileSystem {
      */
     public String addOrRename(String name, VFile file, VFileNameGenerator nameGenerator);
 
-    public void add(String name, VFile file);
+    /**
+     * 
+     * @param name file name
+     * @param file file to add
+     * @throws IllegalArgumentException if the file already exists
+     */
+    public void add(String name, VFile file) throws IllegalArgumentException;
 
-    public void remove(String name);
+    /**
+     * 
+     * @param name
+     * @throws NoSuchElementException if the name does not exist
+     */
+    public void remove(String name) throws NoSuchElementException;
 }

@@ -26,7 +26,7 @@ public class VZipUtils {
         if (options == null || options.getTempFileSystem() == null) {
             throw new IllegalArgumentException("Missing Options");
         }
-        boolean tempFile = false;
+        boolean tempFile = options.isTempFile();
         if (options.isTempFile()) {
             //ignore
         }
@@ -68,7 +68,7 @@ public class VZipUtils {
                 fW.close();
             }
         }
-        if (options.isTempFile()) {
+        if (tempFile) {
             boolean okRenamed = false;
             try {
                 f.renameTo(targetFile);

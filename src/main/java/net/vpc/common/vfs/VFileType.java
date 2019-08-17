@@ -10,7 +10,7 @@ package net.vpc.common.vfs;
  * @author taha.bensalah@gmail.com
  */
 public enum VFileType {
+    UNDEFINED,
     DIRECTORY,
-    FILE,
-    UNKNOWN
+    FILE
 }

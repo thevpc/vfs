@@ -147,7 +147,7 @@ public class NativeVFS extends AbstractVirtualFileSystem {
     @Override
     public VFileType getFileType(String path) {
         File ff = toValidJFile(path);
-        return ff.isDirectory() ? VFileType.DIRECTORY : ff.isFile() ? VFileType.FILE : VFileType.UNKNOWN;
+        return ff.isDirectory() ? VFileType.DIRECTORY : ff.isFile() ? VFileType.FILE : VFileType.UNDEFINED;
     }
 
     @Override
